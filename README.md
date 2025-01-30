@@ -69,8 +69,16 @@ This project contains 13 tests, including 9 tests described in this [source](htt
 >> 1. Click on the "Cart" button at the top right corner             -> Cart page is displayed, products are not displayed
    
 >> 2. Click on the "Checkout" button                                 -> Pay attention to the page
+
+
    
 > Expected result:   User are located on the "Cart" Page, error message "Cart is empty" are displayed
 
 > Actual result:     User goes to the "Checkout" page and can continue checkout proces. No error message appears.
+
+------------------------
+
+> Attachment: ![screenshot](https://prnt.sc/96avrJh6XmJ3)
+
+------------------------
   
