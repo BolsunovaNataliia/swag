@@ -1,79 +1,82 @@
 const { expect } = require('chai');
-const LoginPage = require('../pageobjects/login.page');
-const InventoryPage = require('../pageobjects/inventory.page');
-const CartPage = require('../pageobjects/cart.page');
-const CheckoutPage = require('../pageobjects/checkout.page');
+const loginPage = require('../pageobjects/login.page');
+const inventoryPage = require('../pageobjects/inventory.page');
+const cartPage = require('../pageobjects/cart.page');
+const checkoutPage = require('../pageobjects/checkout.page');
+const {
+    URL,
+    USER,
+} = require('./../../utils/constants');
+const data = require('./../../utils/data');
 
 describe('Checkout functionality', () => {
-    const validUsername = 'standard_user';
-    const validPassword = 'secret_sauce';
-    const firstName = 'John';
-    const lastName = 'Fisher';
-    const postCode = '32025';
-
     before(async () => {
-        await LoginPage.open();
-        await LoginPage.login(validUsername, validPassword);
+        await loginPage.login(USER.VALID_USERNAME, USER.VALID_PASSWORD);
     });
 
-    it('8 - should successfully complete the checkout process after adding a card to the cart',
+    async function proceedToCheckoutAndFillForm() {
+        await cartPage.clickCheckoutBtn();
+        expect(await checkoutPage.isFirstNameFieldDisplayed()).to.be.true;
+
+        await checkoutPage.fillCheckoutForm(
+            data.userCheckoutInfo.firstName,
+            data.userCheckoutInfo.lastName,
+            data.userCheckoutInfo.postCode,
+        );
+        expect(await checkoutPage.getFirstNameValue()).to.equal(data.userCheckoutInfo.firstName);
+        expect(await checkoutPage.getLastNameValue()).to.equal(data.userCheckoutInfo.lastName);
+        expect(await checkoutPage.getPostalCodeValue()).to.equal(data.userCheckoutInfo.postCode);
+    }
+
+    it('8 - should successfully complete the checkout process after adding a product to the cart',
         async () => {
-        await InventoryPage.addToCart();
-        const cartBadgeText = await InventoryPage.cartBadge.getText();
-        expect(cartBadgeText).to.equal('1', 'Cart badge count did not update.');
+        const firstProductPrice = await inventoryPage.getProductPrice();
 
-        await InventoryPage.openCart();
-        const isCartPageDisplayed = await CartPage.isPageDisplayed();
-        expect(isCartPageDisplayed).to.be.true;
+        await inventoryPage.addToCart();
+        expect(await inventoryPage.getCartBadgeNumber()).to.equal(
+            '1',
+            'Cart badge count did not update.'
+        );
 
-        await CartPage.clickCheckoutBtn();
-        expect(await CheckoutPage.firstNameField.isDisplayed()).to.be.true;
+        await inventoryPage.openCart();
+        expect(await cartPage.isPageDisplayed()).to.be.true;
+        expect(await cartPage.getCartItemName()).to.include(
+            data.products.firstProductName,
+            'Product not found in the cart.'
+        );
 
-        await CheckoutPage.fillCheckoutForm(firstName, lastName, postCode);
-        expect(await CheckoutPage.firstNameField.getValue()).to.equal(firstName);
-        expect(await CheckoutPage.lastNameField.getValue()).to.equal(lastName);
-        expect(await CheckoutPage.postalCodeField.getValue()).to.equal(postCode);
+        await proceedToCheckoutAndFillForm();
 
-        await CheckoutPage.clickContinue();
-        expect(await browser.getUrl()).to.include('/checkout-step-two.html');
-        expect(await CartPage.isProductDisplayed()).to.be.true;
+        await checkoutPage.clickContinue();
+        expect(await checkoutPage.getCurrentUrl()).to.include(URL.CHECKOUT_STEP_TWO);
+        expect(await cartPage.isProductDisplayed()).to.be.true;
+        expect(await checkoutPage.getItemPrice()).to.equal(
+            firstProductPrice,
+            'Item price in checkout does not match the product price.'
+        );
 
-        await CheckoutPage.clickFinish();
-        expect(await browser.getUrl()).to.include('/checkout-complete.html');
-        expect(await CheckoutPage.isCheckoutComplete()).to.include('Thank you for your order!');
+        await checkoutPage.clickFinish();
+        expect(await checkoutPage.getCurrentUrl()).to.include(URL.CHECKOUT);
+        expect(await checkoutPage.getCheckoutSuccessMessage()).to.include(
+            'Thank you for your order!'
+        );
 
-        await CheckoutPage.clickBackHome();
-        expect(await browser.getUrl()).to.include('/inventory.html');
-        expect(await InventoryPage.isCartEmpty()).to.be.true;
+        await checkoutPage.clickBackHome();
+        expect(await checkoutPage.getCurrentUrl()).to.include(URL.INVENTORY);
+        expect(await inventoryPage.isCartEmpty()).to.be.true;
     });
 
-    // TODO:This test should be adjusted after the bug is fixed
-    it('9 - should successfully complete the checkout process with empty cart',
+    it('9 - should display an error when proceeding to checkout with an empty cart',
         async () => {
-        await InventoryPage.openCart();
-        const isCartPageDisplayed = await CartPage.isPageDisplayed();
-        expect(isCartPageDisplayed).to.be.true;
+        await inventoryPage.openCart();
+        expect(await cartPage.isPageDisplayed()).to.be.true;
 
-        await CartPage.clickCheckoutBtn();
-        expect(await CheckoutPage.firstNameField.isDisplayed()).to.be.true;
+            await proceedToCheckoutAndFillForm();
 
-        await CheckoutPage.fillCheckoutForm(firstName, lastName, postCode);
-        expect(await CheckoutPage.firstNameField.getValue()).to.equal(firstName);
-        expect(await CheckoutPage.lastNameField.getValue()).to.equal(lastName);
-        expect(await CheckoutPage.postalCodeField.getValue()).to.equal(postCode);
-
-        await CheckoutPage.clickContinue();
-        expect(await browser.getUrl()).to.include('/checkout-step-two.html');
-        expect(await CartPage.isProductDisplayed()).to.be.false;
-
-        const totalPrice = await CheckoutPage.getTotalPrice();
-        expect(totalPrice).to.equal(0);
-
-        await CheckoutPage.clickFinish();
-        expect(await browser.getUrl()).to.include('/checkout-complete.html');
-
-        await CheckoutPage.clickBackHome();
-        expect(await browser.getUrl()).to.include('/inventory.html');
-        expect(await InventoryPage.isCartEmpty()).to.be.true;
+        await checkoutPage.clickContinue();
+        expect(await checkoutPage.getErrorMessageText()).to.include(
+            'Cart is empty',
+            'No error message was displayed for an empty cart.'
+        );
     });
 });

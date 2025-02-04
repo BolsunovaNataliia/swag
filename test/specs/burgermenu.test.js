@@ -1,30 +1,25 @@
-const { expect } = require('chai')
-const LoginPage = require('../pageobjects/login.page')
-const InventoryPage = require('../pageobjects/inventory.page');
+const { expect } = require('chai');
+const loginPage = require('../pageobjects/login.page');
+const inventoryPage = require('../pageobjects/inventory.page');
+const { URL, USER } = require('./../../utils/constants');
 
 describe('Burger menu functionality', () => {
-    const validUsername = 'standard_user';
-    const validPassword = 'secret_sauce';
-
     before(async () => {
-        await LoginPage.open();
-        await LoginPage.login(validUsername, validPassword);
+        await loginPage.login(USER.VALID_USERNAME, USER.VALID_PASSWORD);
     });
 
     it('4 - should expand menu and log out', async () => {
-        await InventoryPage.expandMenu();
-        expect(await InventoryPage.isMenuExpanded()).to.be.true;
+        await inventoryPage.expandMenu();
+        expect(await inventoryPage.isMenuExpanded()).to.be.true;
 
-        await InventoryPage.logout();
-        const currentUrl = await browser.getUrl();
+        await inventoryPage.logout();
+        const currentUrl = await inventoryPage.getCurrentUrl();
         expect(currentUrl).to.equal(
-            'https://www.saucedemo.com/',
+            URL.LOGIN,
             'User was not redirected to the login page.'
         );
 
-        const usernameValue = await LoginPage.usernameField.getValue();
-        const passwordValue = await LoginPage.passwordField.getValue();
-        expect(usernameValue).to.equal('', 'Username field is not empty.');
-        expect(passwordValue).to.equal('', 'Password field is not empty.');
-    })
-})
+        expect(await loginPage.isUsernameFieldEmpty()).to.be.true;
+        expect(await loginPage.isPasswordFieldEmpty()).to.be.true;
+    });
+});

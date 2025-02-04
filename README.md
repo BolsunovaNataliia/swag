@@ -60,13 +60,13 @@ This project contains 13 tests, including 9 tests described in this [source](htt
 
 > Preconditions:
 
->> User is on the logined account.
+>> User logged in account.
 
 >> User is on the inventory page.
 
 > Steps to reproduce:
 
->> 1. Click on the "Cart" button at the top right corner             -> Cart page is displayed, products are not displayed
+>> 1. Click on the "Cart" button in the top right corner             -> Cart page is displayed, products are not displayed
    
 >> 2. Click on the "Checkout" button                                 -> Pay attention to the page
 

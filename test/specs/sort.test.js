@@ -1,48 +1,31 @@
-const { expect } = require('chai')
-const LoginPage = require('../pageobjects/login.page')
-const InventoryPage = require('../pageobjects/inventory.page');
+const { expect } = require('chai');
+const loginPage = require('../pageobjects/login.page');
+const inventoryPage = require('../pageobjects/inventory.page');
+const { USER } = require('./../../utils/constants');
+const data = require('./../../utils/data');
+const { sortPrices, sortNames } = require('./../../utils/sorting');
 
 describe('06 - Sorting functionality', () => {
-    const validUsername = 'standard_user';
-    const validPassword = 'secret_sauce';
-    const sortingOptions = [
-        { text: 'Price (low to high)', type: 'price', order: 'asc' },
-        { text: 'Price (high to low)', type: 'price', order: 'desc' },
-        { text: 'Name (A to Z)', type: 'name', order: 'asc' },
-        { text: 'Name (Z to A)', type: 'name', order: 'desc' }
-    ];
-
     before(async () => {
-        await LoginPage.open();
-        await LoginPage.login(validUsername, validPassword);
+        await loginPage.login(USER.VALID_USERNAME, USER.VALID_PASSWORD);
     });
 
-    sortingOptions.forEach(({ text, type, order }) => {
-        it(`should sort products by ${text}`, async () => {
-            // Select sorting option
-            await InventoryPage.selectSortingOption(text);
-
-            // Validate sorting
+    data.sortingOptions.forEach(({ title, type, order }) => {
+        it(`should sort products by ${title}`, async () => {
+            await inventoryPage.selectSortingOption(title);
             if (type === 'price') {
-                const prices = await InventoryPage.getProductPrices();
-                const sortedPrices = [...prices].sort((a, b) =>
-                    order === 'asc' ? a - b : b - a
-                );
+                const prices = await inventoryPage.getProductPrices();
                 expect(prices).to.deep.equal(
-                    sortedPrices,
-                    `Products are not sorted by ${text}.`
+                    sortPrices(prices, order),
+                    `Products are not sorted by ${title}.`
                 );
             } else if (type === 'name') {
-                const names = await InventoryPage.getProductNames();
-                const sortedNames = [...names].sort((a, b) =>
-                    order === 'asc' ? a.localeCompare(b) : b.localeCompare(a)
-                );
+                const names = await inventoryPage.getProductNames();
                 expect(names).to.deep.equal(
-                    sortedNames,
-                    `Products are not sorted by ${text}.`
+                    sortNames(names, order),
+                    `Products are not sorted by ${title}.`
                 );
             }
-        })
-    })
-})
-
+        });
+    });
+});

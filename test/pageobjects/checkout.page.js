@@ -1,4 +1,3 @@
-const { $ } = require('@wdio/globals')
 const Page = require('./page');
 
 class CheckoutPage extends Page {
@@ -8,8 +7,9 @@ class CheckoutPage extends Page {
     get continueBtn() { return $('#continue'); }
     get finishBtn() { return $('#finish'); }
     get backHomeBtn() { return $('#back-to-products'); }
-    get checkoutCompleteHeader() { return $('.complete-header'); }
-    get totalPriceLabel() { return $('.summary_total_label'); }
+    get checkoutSuccessMessage() { return $('.complete-header'); }
+    get itemPriceLabel() { return $('.summary_subtotal_label'); }
+    get errorMessage() { return $('[class*="error-message"]'); }
 
     async fillCheckoutForm(firstName, lastName, postalCode) {
         await this.firstNameField.setValue(firstName);
@@ -29,13 +29,33 @@ class CheckoutPage extends Page {
         await this.backHomeBtn.click();
     }
 
-    async isCheckoutComplete() {
-        return await this.checkoutCompleteHeader.getText();
+    async getCheckoutSuccessMessage() {
+        return await this.checkoutSuccessMessage.getText();
     }
 
-    async getTotalPrice() {
-        const priceText = await this.totalPriceLabel.getText();
-        return parseFloat(priceText.replace('Total: $', ''));
+    async getItemPrice() {
+        const priceText = await this.itemPriceLabel.getText();
+        return parseFloat(priceText.replace('Item total: $', ''));
+    }
+
+    async getErrorMessageText() {
+        return await this.errorMessage.getText();
+    }
+
+    async isFirstNameFieldDisplayed() {
+        return await this.firstNameField.isDisplayed();
+    }
+
+    async getFirstNameValue() {
+        return await this.firstNameField.getValue();
+    }
+
+    async getLastNameValue() {
+        return await this.lastNameField.getValue();
+    }
+
+    async getPostalCodeValue() {
+        return await this.postalCodeField.getValue();
     }
 }
 

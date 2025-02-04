@@ -1,4 +1,3 @@
-const { $ } = require('@wdio/globals')
 const Page = require('./page');
 
 class CartPage extends Page {
@@ -12,6 +11,10 @@ class CartPage extends Page {
         return await this.cartItems.isDisplayed();
     }
 
+    async getCartItemName() {
+        return await this.cartItem.getText();
+    }
+
     async removeCard() {
         await this.removeCardBtn.click();
     }
@@ -22,6 +25,10 @@ class CartPage extends Page {
 
     async isProductDisplayed() {
         return await this.cartItem.isDisplayed();
+    }
+
+    async continueShopping() {
+        await this.continueShoppingBtn.click();
     }
 }
 

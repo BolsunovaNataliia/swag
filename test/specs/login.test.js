@@ -1,59 +1,54 @@
-const { expect } = require('chai')
-const LoginPage = require('../pageobjects/login.page')
-const InventoryPage = require("../pageobjects/inventory.page");
-const CartPage = require("../pageobjects/cart.page");
+const { expect } = require('chai');
+const loginPage = require('../pageobjects/login.page');
+const inventoryPage = require("../pageobjects/inventory.page");
+const data = require('./../../utils/data');
+const { URL, USER } = require('./../../utils/constants');
 
 describe('Login', () => {
     it('1 - should login with valid credentials', async () => {
-        await LoginPage.open()
-        await LoginPage.fillCredentials('standard_user', 'secret_sauce')
+        await loginPage.open();
+        await loginPage.fillCredentials(USER.VALID_USERNAME, USER.VALID_PASSWORD);
+        expect(await loginPage.getUsername()).to.equal(USER.VALID_USERNAME);
+        expect(await loginPage.getPassword()).to.equal(USER.VALID_PASSWORD);
 
-        const passwordField = $('#password');
-        const passwordFieldType = await passwordField.getAttribute('type');
+        const passwordFieldType = await loginPage.getPasswordFieldType();
         expect(passwordFieldType).to.equal('password');
 
-        await LoginPage.clickLoginBtn()
-        const currentUrl = await browser.getUrl();
+        await loginPage.clickLoginBtn()
+        const currentUrl = await loginPage.getCurrentUrl();
         expect(currentUrl).to.equal(
-            'https://www.saucedemo.com/inventory.html',
-            'User was not redirected to the inventory page.');
-
-        const isInventoryPageDisplayed = await InventoryPage.isPageDisplayed();
-        expect(isInventoryPageDisplayed).to.be.true;
-
-        const isProductsDisplayed = await InventoryPage.isPageDisplayed();
-        expect(isProductsDisplayed).to.be.true;
+            URL.INVENTORY ,
+            'User was not redirected to the inventory page.'
+        );
+        expect(await inventoryPage.isPageDisplayed()).to.be.true;
+        expect(await inventoryPage.isCartIconDisplayed()).to.be.true;
     })
 
-    const testData = [
-        { username: 'standard_user', password: 'invalid_password' },
-        { username: 'invalid_user', password: 'secret_sauce' },
-    ];
-
-    testData.forEach(({ username, password }) => {
+    data.userData.forEach(({ username, password }) => {
         it(`2-3 - should show error with username: ${username} or password: ${password}`,
             async () => {
-            await LoginPage.open();
-            await LoginPage.fillCredentials(username, password);
+            await loginPage.open();
+            await loginPage.fillCredentials(username, password);
+            expect(await loginPage.getUsername()).to.equal(username);
+            expect(await loginPage.getPassword()).to.equal(password);
 
-            const passwordField = $('#password');
-            const passwordFieldType = await passwordField.getAttribute('type');
+            const passwordFieldType = await loginPage.getPasswordFieldType();
             expect(passwordFieldType).to.equal('password');
 
-            await LoginPage.clickLoginBtn();
+            await loginPage.clickLoginBtn();
 
-            expect(await LoginPage.isErrorIconUsernameFieldDisplayed()).to.be.true;
-            expect(await LoginPage.isErrorIconPasswordFieldDisplayed()).to.be.true;
+            expect(await loginPage.isErrorIconUsernameFieldDisplayed()).to.be.true;
+            expect(await loginPage.isErrorIconPasswordFieldDisplayed()).to.be.true;
 
-            const actualErrorMessage = await $('#login_button_container .error-message-container').getText();
+            const actualErrorMessage = await loginPage.getErrorMessageText();
             expect(actualErrorMessage).to.include(
                 'Username and password do not match',
                 'Error message was not displayed for invalid username or password.'
             );
 
-            const currentUrl = await browser.getUrl();
+            const currentUrl = await loginPage.getCurrentUrl();
             expect(currentUrl).to.equal(
-                'https://www.saucedemo.com/',
+                URL.LOGIN,
                 'User should not be redirected on invalid login.'
             );
         });
