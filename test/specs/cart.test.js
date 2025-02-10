@@ -44,9 +44,6 @@ describe('Cart functionality', () => {
             data.products.firstProductName,
             'Product not found in the cart.'
         );
-
-        await cartPage.removeCard();
-        await cartPage.continueShoppingBtn.click();
     });
 
     it('should be able to return to inventory from the cart page',
